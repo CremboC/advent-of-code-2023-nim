@@ -12,3 +12,7 @@ func intersect*[T, U](this: HSlice[T, U], other: HSlice[T, U]): seq[HSlice[T, U]
     if inter.b < this.b:
       result.add(inter.b + 1..this.b)
     return result
+
+func toString*(bytes: seq[char]): string =
+  result = newString(bytes.len)
+  copyMem(result[0].addr, bytes[0].unsafeAddr, bytes.len)
