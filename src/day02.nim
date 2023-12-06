@@ -3,10 +3,7 @@ import day02Input as day02
 import strformat
 import strutils
 import sequtils
-import sugar
 import tables
-import algorithm
-import strscans
 
 func part1(): int =
   const lines = day02.input.splitLines()
