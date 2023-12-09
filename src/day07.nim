@@ -26,20 +26,20 @@ type Hand = tuple
 func `<`[T](a: (T, int), b: (T, int)): bool =
   a[1] < b[1]
 
-proc newHand(it: string): Hand =
+func newHand(it: string): Hand =
   let hand = it[0..4]
   let table = hand.toCountTable
   (hand, table, table.pairs.toSeq.sorted, parseInt(it[6..^1]))
 
-proc compareSameKind(index: Table[char, int], left: string, right: string): int =
+func compareSameKind(index: Table[char, int], left: string, right: string): int =
   for (l, r) in zip(left, right):
     if l != r:
       return cmp(index[l], index[r])
 
-proc compareHands(index: Table[char, int], left: Hand, right: Hand): int =
+func compareHands(index: Table[char, int], left: Hand, right: Hand): int =
     compareSameKind(index, left.hand, right.hand)
 
-proc part1(): int =
+func part1(): int =
   let index = {'2': 1, '3': 2, '4': 3, '5': 4, '6': 5, '7': 6, '8': 7, '9': 8, 'T': 9, 'J': 10, 'Q': 11, 'K': 12, 'A': 13 }.toTable
   let checks = [
     # five of a kind
@@ -81,7 +81,7 @@ proc part1(): int =
 
   result
 
-proc part2(): int =
+func part2(): int =
   let index = {'J': 0, '2': 1, '3': 2, '4': 3, '5': 4, '6': 5, '7': 6, '8': 7, '9': 8, 'T': 9, 'Q': 10, 'K': 11, 'A': 12 }.toTable
   let checks = [
     # five of a kind
