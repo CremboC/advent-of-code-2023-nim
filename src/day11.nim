@@ -42,9 +42,10 @@ proc cost(x, y: Loc): int =
 func astar(start, goal: Loc, h: ((Loc, Loc) {.noSideEffect.} -> int)): Deque[Loc] =
   var
     openSet = @[LocP(loc: start, priority: h(start, goal))].toHeapQueue
-    cameFrom: Table[Loc, Loc]
-    gScore = { start: 0 }.toTable
-    fScore = { start: h(start, goal) }.toTable
+    cameFrom = initTable[Loc, Loc](h(start, goal))
+    gScore = initTable[Loc, int](h(start, goal) * 2)
+
+  gScore[start] = 0
 
   while openSet.len > 0:
     let current = openSet.pop
@@ -52,13 +53,11 @@ func astar(start, goal: Loc, h: ((Loc, Loc) {.noSideEffect.} -> int)): Deque[Loc
       return rebuildPath(cameFrom, current.loc)
 
     for neighbor in neighbors(current.loc):
-      if neighbor != current.loc:
-        let tentativeScore = gScore[current.loc] + 0
-        if tentativeScore < gScore.getOrDefault(neighbor, high(int)):
-          cameFrom[neighbor] = current.loc
-          gScore[neighbor] = tentativeScore
-          fScore[neighbor] = tentativeScore + h(neighbor, goal)
-          openSet.push(LocP(loc: neighbor, priority: fScore[neighbor]))
+      let tentativeScore = gScore[current.loc]
+      if tentativeScore < gScore.getOrDefault(neighbor, high(int)):
+        cameFrom[neighbor] = current.loc
+        gScore[neighbor] = tentativeScore
+        openSet.push(LocP(loc: neighbor, priority: tentativeScore + h(neighbor, goal)))
 
 proc solveForInput(input: string, multi: int): int =
   let
