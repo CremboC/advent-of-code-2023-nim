@@ -13,3 +13,4 @@ bin           = @["advent_of_code_2023_nim"]
 requires "nim >= 2.0.0"
 requires "https://github.com/fsh/strides#52d2136"
 requires "fusion >= 1.2"
+requires "Arraymancer >= 0.7"
