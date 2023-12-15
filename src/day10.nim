@@ -24,13 +24,6 @@ func convertToUtf8(s: char): string =
     of 'J': Rune(0x2518).toUTF8
     else: @[s].toString
 
-proc prettyPrintTensor(t: Tensor[char]) =
-  for y in 0..<t.shape[0]:
-    for x in 0..<t.shape[1]:
-      stdout.write(t[y, x].convertToUtf8)
-    echo ""
-  echo ""
-
 type Coord = tuple
   y: int
   x: int
