@@ -31,6 +31,24 @@ iterator neighbors*(loc: Vec2): Vec2 =
   yield (loc.y, loc.x + 1)
   yield (loc.y + 1, loc.x)
 
+func addX*(v: Vec2, x: int): Vec2 =
+  (v.y, v.x + x)
+
+func addY*(v: Vec2, y: int): Vec2 =
+  (v.y + y, v.x)
+
+func north*(v: Vec2): Vec2 =
+  v.addY(-1)
+
+func south*(v: Vec2): Vec2 =
+  v.addY(1)
+
+func east*(v: Vec2): Vec2 =
+  v.addX(1)
+
+func west*(v: Vec2): Vec2 =
+  v.addX(-1)
+
 import arraymancer
 
 proc pp*(t: Tensor[char]) =
@@ -42,3 +60,13 @@ proc pp*(t: Tensor[char]) =
 iterator slidingWindow*[T](s: Tensor[T], windowSize: int): Tensor[T] =
   for i in 0..<(s.len - windowSize + 1):
     yield s[i..<(i + windowSize)]
+
+import times
+import sugar
+import strformat
+
+proc measure*(s: string, f: () -> int) =
+  let start = cpuTime()
+  let result = f()
+  let finish = cpuTime()
+  echo fmt"Part {s} [t={((finish - start) * 1000):.2f}ms]: {result}"
