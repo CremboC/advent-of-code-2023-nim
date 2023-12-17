@@ -1,53 +1,139 @@
 import day14Input as input
-import util
 
 import strutils
 import strformat
 import sequtils
 import arraymancer
 import times
-import options
+import tables
 
 proc part1(): int =
   var t = input.input.splitLines.mapIt(it.toSeq).toTensor
+  let yMax = t.shape[0]
   for x, col in t.enumerateAxis(1):
-    var y = 0
-    while y < col.shape[0]:
-      if t[y, x] == 'O' or t[y, x] == '#':
+    var wallIdx = -1
+    var y, rockCount, emptyCount = 0
+    proc updateCol() =
+      if rockCount > 0:
+        t[(wallIdx+1)..<wallIdx+1+rockCount, x] = 'O'
+      if emptyCount > 0:
+        t[(wallIdx+1+rockCount)..<wallIdx+1+rockCount+emptyCount, x] = '.'
+      rockCount = 0
+      emptyCount = 0
+      wallIdx = y
+    while y < yMax:
+      if t[y, x] == '#':
+        updateCol()
         inc(y)
         continue
-      # otherwise we got an empty spot, we can move a O into it
-      # find next O
-      var nextO: int = -1
-      var nextHash: int = -1
-      for coord, yy in t[y.._, x]:
-        if yy == '#':
-          nextHash = coord[0]
-          break
-        if yy == 'O':
-          nextO = coord[0]
-          break
-      if nextHash != -1:
-        # skip rows to the next hash if we found it
-        y += nextHash
-        continue
-      if nextO != -1:
-        # we found the next circle, move it here
-        # and remove it from where we found it
-        t[y, x] = 'O'
-        t[y + nextO, x] = '.'
-      inc(y)
+      elif t[y, x] == 'O': inc(rockCount)
+      elif t[y, x] == '.': inc(emptyCount)
 
-  func rowCost(idx: int): int =
-    t.shape[0] - idx
+      if y == yMax - 1:
+        updateCol()
+      inc(y)
 
   for y, row in t.enumerateAxis(0):
     for el in row:
       if el == 'O':
-        result += y.rowCost
+        result += yMax - y
 
 proc part2(): int =
-  var t = input.example.splitLines.mapIt(it.toSeq).toTensor
+  var t = input.input.splitLines.mapIt(it.toSeq).toTensor
+  let
+    yMax = t.shape[0]
+    xMax = t.shape[1]
+
+  proc tiltNorth() =
+    for x, col in t.enumerateAxis(1):
+      var wallIdx = -1
+      var y, rockCount, emptyCount = 0
+      proc updateCol() =
+        if rockCount > 0:
+          t[(wallIdx+1)..<wallIdx+1+rockCount, x] = 'O'
+        if emptyCount > 0:
+          t[(wallIdx+1+rockCount)..<wallIdx+1+rockCount+emptyCount, x] = '.'
+        rockCount = 0
+        emptyCount = 0
+        wallIdx = y
+      while y < yMax:
+        if t[y, x] == '#':
+          updateCol()
+          inc(y)
+          continue
+        elif t[y, x] == 'O': inc(rockCount)
+        elif t[y, x] == '.': inc(emptyCount)
+
+        if y == yMax - 1:
+          updateCol()
+        inc(y)
+
+  proc tiltSouth() =
+    t = t[_|-1]
+    tiltNorth()
+    t = t[_|-1]
+
+  proc tiltWest() =
+    for y, row in t.enumerateAxis(0):
+      var wallIdx = -1
+      var x, rockCount, emptyCount = 0
+      proc updateRow() =
+        if rockCount > 0:
+          t[y, (wallIdx+1)..<wallIdx+1+rockCount] = 'O'
+        if emptyCount > 0:
+          t[y, (wallIdx+1+rockCount)..<wallIdx+1+rockCount+emptyCount] = '.'
+        rockCount = 0
+        emptyCount = 0
+        wallIdx = x
+      while x < xMax:
+        if t[y, x] == '#':
+          updateRow()
+          inc(x)
+          continue
+        elif t[y, x] == 'O': inc(rockCount)
+        elif t[y, x] == '.': inc(emptyCount)
+
+        if x == xMax - 1:
+          updateRow()
+        inc(x)
+
+  proc tiltEast() =
+    t = t[_, _|-1]
+    tiltWest()
+    t = t[_, _|-1]
+
+  proc cycle() =
+    tiltNorth()
+    tiltWest()
+    tiltSouth()
+    tiltEast()
+
+  var hash = initTable[seq[char], int](256)
+  hash[t.toFlatSeq] = 0
+  var i: int
+  var sameAs: int
+  while true:
+    cycle()
+    if hash.hasKeyOrPut(t.toFlatSeq, i):
+      sameAs = hash[t.toFlatSeq]
+      break
+    inc(i)
+
+  let totalSteps = 1_000_000_000
+  let cycleStart = sameAs
+  let cycleLength = i - sameAs
+  # good old off-by-one error :)
+  let stepInCycle = (((totalSteps - cycleStart) mod cycleLength) + cycleStart) - 1
+
+  for k, v in hash:
+    if v == stepInCycle:
+      t = k.toTensor.reshape(yMax, xMax)
+      break
+
+  for y, row in t.enumerateAxis(0):
+    for el in row:
+      if el == 'O':
+        result += yMax - y
 
 block:
   let start = cpuTime()
