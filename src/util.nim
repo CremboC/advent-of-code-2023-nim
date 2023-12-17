@@ -65,7 +65,7 @@ import times
 import sugar
 import strformat
 
-proc measure*(s: string, f: () -> int) =
+proc measure*(s: auto, f: () -> int) =
   let start = cpuTime()
   let result = f()
   let finish = cpuTime()
