@@ -64,9 +64,18 @@ iterator slidingWindow*[T](s: Tensor[T], windowSize: int): Tensor[T] =
 import times
 import sugar
 import strformat
+import std/monotimes
+import std/times
 
 proc measure*(s: auto, f: () -> int) =
   let start = cpuTime()
   let result = f()
   let finish = cpuTime()
   echo fmt"Part {s} [t={((finish - start) * 1000):.2f}ms]: {result}"
+
+proc measureMono*(s: auto, f: () -> int) =
+  let start = getMonoTime()
+  let result = f()
+  let finish = getMonoTime()
+  let millis = (float((finish - start).inMicroseconds) / 1000.0)
+  echo fmt"Part {s} [t={millis:.2f}ms]: {result}"
